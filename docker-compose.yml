@@ -1,0 +1,28 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ${NNUNET_RESULTS_PATH:-./weights}:/data/nnUNet_results:ro
+      - ./uploads:/app/uploads
+      - ./results:/app/results
+    environment:
+      - NNUNET_RESULTS_PATH=/data/nnUNet_results
+      - UPLOAD_DIR=/app/uploads
+      - RESULTS_DIR=/app/results
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
