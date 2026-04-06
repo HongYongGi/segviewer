@@ -5,6 +5,7 @@ from typing import Optional
 from fastapi import APIRouter, Query, Request
 from fastapi.responses import JSONResponse, Response
 
+from app.services.mesh_service import MeshService
 from app.services.segment_service import (
     InvalidLabelError,
     ResultNotFoundError,
@@ -14,6 +15,7 @@ from app.services.segment_service import (
 
 router = APIRouter(prefix="/api/segments", tags=["segments"])
 service = SegmentService()
+mesh_service = MeshService()
 
 
 @router.get("/{result_id}/volume")
@@ -65,6 +67,23 @@ async def save_edited(result_id: str, request: Request) -> dict:
         return JSONResponse(status_code=400, content={"error": e.code, "message": e.message, "detail": {}})
     except InvalidLabelError as e:
         return JSONResponse(status_code=400, content={"error": e.code, "message": e.message, "detail": {}})
+
+
+@router.get("/{result_id}/mesh")
+async def get_mesh(result_id: str, class_id: int = Query(...)) -> Response:
+    try:
+        nifti_path, _ = service._find_result(result_id)
+        data_bytes, headers = mesh_service.generate_mesh(str(nifti_path), class_id)
+        return Response(
+            content=data_bytes,
+            media_type="application/octet-stream",
+            headers=headers,
+        )
+    except ResultNotFoundError as e:
+        return JSONResponse(
+            status_code=404,
+            content={"error": e.code, "message": e.message, "detail": {}},
+        )
 
 
 @router.get("/history")

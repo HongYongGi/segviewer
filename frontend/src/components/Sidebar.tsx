@@ -1,11 +1,13 @@
 import { useImageStore } from '../stores/imageStore'
 import { useSegmentationStore } from '../stores/segmentationStore'
 import { formatBytes, formatPercent } from '../utils/colormap'
+import ToolPanel from './ToolPanel'
 
 export default function Sidebar() {
   return (
     <aside className="flex w-[300px] shrink-0 flex-col overflow-y-auto border-l border-[#0f3460] bg-[#16213e]">
       <LabelPanel />
+      <ToolPanel />
       <MetadataPanel />
     </aside>
   )
