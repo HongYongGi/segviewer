@@ -19,6 +19,8 @@ from app.config import settings
 
 logger = logging.getLogger("segviewer.inference")
 
+JOB_TTL_SECONDS = 3600  # completed/failed jobs are cleaned up after 1 hour
+
 try:
     import torch
     from nnunetv2.inference.predict_from_raw_data import nnUNetPredictor
@@ -82,10 +84,12 @@ class InferenceService:
         self._predictors: dict[str, Any] = {}
         self._predictor_lru: list[str] = []
         self._worker_task: asyncio.Task | None = None
+        self._cleanup_task: asyncio.Task | None = None
 
     def start_worker(self) -> None:
         if self._worker_task is None:
             self._worker_task = asyncio.create_task(self._worker())
+            self._cleanup_task = asyncio.create_task(self._cleanup_loop())
             logger.info("Inference worker started")
 
     async def submit(self, job: InferenceJob) -> None:
@@ -249,6 +253,22 @@ class InferenceService:
             logger.info("Model released: %s", cache_key)
         except Exception:
             logger.exception("Failed to release model: %s", cache_key)
+
+    async def _cleanup_loop(self) -> None:
+        """Periodically remove completed/failed jobs older than JOB_TTL_SECONDS."""
+        while True:
+            await asyncio.sleep(300)  # check every 5 minutes
+            now = time.time()
+            expired = [
+                jid for jid, job in self._jobs.items()
+                if job.status in ("completed", "failed")
+                and job.started_at
+                and (now - job.started_at) > JOB_TTL_SECONDS
+            ]
+            for jid in expired:
+                del self._jobs[jid]
+            if expired:
+                logger.info("Cleaned up %d expired jobs", len(expired))
 
     def get_cache_info(self) -> dict[str, Any]:
         info: dict[str, Any] = {

@@ -2,6 +2,9 @@ import { create } from 'zustand'
 import type { InferenceRequest, InferenceStatus } from '../types/inference'
 import apiClient from '../api/client'
 
+const MAX_POLL_RETRIES = 150  // 2s * 150 = 최대 5분
+const POLL_INTERVAL_MS = 2000
+
 interface InferenceState {
   jobId: string | null
   status: InferenceStatus | null
@@ -40,13 +43,13 @@ export const useInferenceStore = create<InferenceState>((set, get) => ({
       ws.onerror = () => {
         set({ running: false })
         ws.close()
-        pollStatus(jobId, set)
+        pollStatus(jobId, set, 0)
       }
 
       ws.onclose = () => {
         const current = get().status
         if (current && current.status !== 'completed' && current.status !== 'failed') {
-          pollStatus(jobId, set)
+          pollStatus(jobId, set, 0)
         }
       }
     } catch {
@@ -59,14 +62,35 @@ export const useInferenceStore = create<InferenceState>((set, get) => ({
 
 async function pollStatus(
   jobId: string,
-  set: (partial: Partial<InferenceState>) => void
+  set: (partial: Partial<InferenceState>) => void,
+  retryCount: number
 ) {
+  if (retryCount >= MAX_POLL_RETRIES) {
+    set({
+      running: false,
+      status: {
+        job_id: jobId,
+        image_id: '',
+        status: 'failed',
+        progress: -1,
+        stage: 'timeout',
+        stage_detail: '',
+        result_id: null,
+        error: 'POLL_TIMEOUT',
+        error_message: `폴링 타임아웃: ${MAX_POLL_RETRIES * POLL_INTERVAL_MS / 1000}초 초과`,
+        elapsed_seconds: 0,
+        labels: {},
+      },
+    })
+    return
+  }
+
   const poll = async () => {
     try {
       const res = await apiClient.get(`/inference/${jobId}/status`)
       set({ status: res.data })
       if (res.data.status !== 'completed' && res.data.status !== 'failed') {
-        setTimeout(poll, 2000)
+        setTimeout(() => pollStatus(jobId, set, retryCount + 1), POLL_INTERVAL_MS)
       } else {
         set({ running: false })
       }
@@ -74,5 +98,5 @@ async function pollStatus(
       set({ running: false })
     }
   }
-  setTimeout(poll, 2000)
+  setTimeout(poll, POLL_INTERVAL_MS)
 }

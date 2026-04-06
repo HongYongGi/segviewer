@@ -20,7 +20,7 @@ class SegmentService:
         self.results_dir = Path(settings.results_dir)
 
     def get_volume_bytes(self, result_id: str) -> tuple[bytes, dict[str, str]]:
-        nifti_path, meta = self._find_result(result_id)
+        nifti_path, meta = self.find_result(result_id)
         img = nib.load(str(nifti_path))
         data = np.asarray(img.dataobj).astype(np.uint8)
 
@@ -34,7 +34,7 @@ class SegmentService:
         return data.tobytes(order="C"), headers
 
     def get_metadata(self, result_id: str) -> dict[str, Any]:
-        nifti_path, meta = self._find_result(result_id)
+        nifti_path, meta = self.find_result(result_id)
         img = nib.load(str(nifti_path))
         data = np.asarray(img.dataobj).astype(np.uint8)
 
@@ -48,7 +48,7 @@ class SegmentService:
     def save_edited(
         self, result_id: str, seg_bytes: bytes, shape: tuple[int, ...], dtype: str
     ) -> dict[str, Any]:
-        nifti_path, meta = self._find_result(result_id)
+        nifti_path, meta = self.find_result(result_id)
 
         original_img = nib.load(str(nifti_path))
         original_shape = original_img.shape
@@ -102,7 +102,7 @@ class SegmentService:
             results.append(meta)
         return results
 
-    def _find_result(self, result_id: str) -> tuple[Path, dict[str, Any]]:
+    def find_result(self, result_id: str) -> tuple[Path, dict[str, Any]]:
         for image_dir in self.results_dir.iterdir():
             if not image_dir.is_dir():
                 continue

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import Toolbar from './components/Toolbar'
 import Sidebar from './components/Sidebar'
 import ViewerGrid from './viewers/ViewerGrid'
+import ToastContainer from './components/ToastContainer'
 
 interface GpuInfo {
   gpu_name: string
@@ -41,6 +42,7 @@ function App() {
 
   return (
     <div className="flex h-screen w-screen flex-col bg-[#1a1a2e] text-[#e0e0e0]">
+      <ToastContainer />
       <Toolbar onWLChange={handleWLChange} />
 
       <div className="flex flex-1 overflow-hidden">
