@@ -1,0 +1,56 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+venv/
+.venv/
+
+# Node.js
+node_modules/
+dist/
+build/
+.cache/
+
+# Environment
+.env
+.env.local
+
+# Data files (환자 데이터 등 절대 커밋 금지)
+uploads/
+results/
+model_notes/
+*.nii
+*.nii.gz
+*.pth
+*.pt
+*.onnx
+
+# nnUNet weights
+nnUNet_results/
+nnUNet_raw/
+nnUNet_preprocessed/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose.override.yml
+
+# Logs
+*.log
+logs/
+
+# Claude Code
+.claude/
