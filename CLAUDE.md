@@ -97,10 +97,10 @@ segviewer/
 
 | Phase | 내용 | 상태 |
 |-------|------|------|
-| Phase 0 | 프로젝트 기반 세팅 (Docker, FastAPI 뼈대, React 뼈대) | 미시작 |
-| Phase 1 | MVP (업로드, 2D 뷰어, W/L, 모델 목록, inference, 오버레이) | 미시작 |
-| Phase 2 | 3D 렌더링 + 브러시/지우개 편집 | 미시작 |
-| Phase 3 | 편의기능 (다운로드, 히스토리, 모델 메모) | 미시작 |
+| Phase 0 | 프로젝트 기반 세팅 (Docker, FastAPI 뼈대, React 뼈대) | 완료 |
+| Phase 1 | MVP (업로드, 2D 뷰어, W/L, 모델 목록, inference, 오버레이) | 완료 |
+| Phase 2 | 3D 렌더링 + 브러시/지우개 편집 | 완료 |
+| Phase 3 | 편의기능 (다운로드, 히스토리, GPU 모니터링) | 완료 |
 
 ---
 
