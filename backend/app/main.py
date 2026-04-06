@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
-from app.routers import images, inference, models, segments
+from app.routers import images, inference, models, segments, system
 
 logger = logging.getLogger("segviewer")
 
@@ -45,6 +45,7 @@ def create_app() -> FastAPI:
     application.include_router(models.router)
     application.include_router(inference.router)
     application.include_router(segments.router)
+    application.include_router(system.router)
 
     @application.on_event("startup")
     async def startup() -> None:

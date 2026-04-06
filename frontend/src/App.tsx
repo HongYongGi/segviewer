@@ -3,8 +3,16 @@ import Toolbar from './components/Toolbar'
 import Sidebar from './components/Sidebar'
 import ViewerGrid from './viewers/ViewerGrid'
 
+interface GpuInfo {
+  gpu_name: string
+  vram_used_mb: number
+  vram_total_mb: number
+  cuda_available: boolean
+}
+
 function App() {
   const [backendStatus, setBackendStatus] = useState<string>('connecting...')
+  const [gpuInfo, setGpuInfo] = useState<GpuInfo | null>(null)
   const [windowWidth, setWindowWidth] = useState(400)
   const [windowLevel, setWindowLevel] = useState(40)
 
@@ -13,12 +21,23 @@ function App() {
       .then((res) => res.json())
       .then((data) => setBackendStatus(data.status))
       .catch(() => setBackendStatus('offline'))
+
+    fetch('/api/system/gpu')
+      .then((res) => res.json())
+      .then((data) => setGpuInfo(data))
+      .catch(() => {})
   }, [])
 
   const handleWLChange = (w: number, l: number) => {
     setWindowWidth(w)
     setWindowLevel(l)
   }
+
+  const gpuText = gpuInfo
+    ? gpuInfo.cuda_available
+      ? `${gpuInfo.gpu_name} (${gpuInfo.vram_used_mb}/${gpuInfo.vram_total_mb}MB)`
+      : 'CPU only'
+    : 'N/A'
 
   return (
     <div className="flex h-screen w-screen flex-col bg-[#1a1a2e] text-[#e0e0e0]">
@@ -36,7 +55,7 @@ function App() {
             {backendStatus}
           </span>
         </span>
-        <span>GPU: N/A</span>
+        <span>GPU: {gpuText}</span>
         <span>Status: Ready</span>
       </footer>
     </div>
